@@ -165,3 +165,7 @@ Explore your metrics using the `Explore` in grafana
 helm del --purge prometheus
 helm del --purge grafana
 ```
+
+# TODO:
+* Add examples of interacting with the Alertmanager and Pushgateway
+* Add example of using the Prometheus Operator
