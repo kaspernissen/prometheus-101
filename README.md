@@ -162,10 +162,100 @@ Explore your metrics using the `Explore` in grafana
 ## Removing it all again
 
 ```
-helm del --purge prometheus
-helm del --purge grafana
+$ helm del --purge prometheus
+$ helm del --purge grafana
 ```
+
+## Alternative Prometheus installation: Prometheus Operator
+
+```
+$ helm install stable/prometheus-operator --name prometheus
+```
+
+This will install Prometheus using a Custom Resource Object (CRD) in Kubernetes. The `Prometheus` object installed by default looks like this:
+
+```
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  creationTimestamp: 2019-05-08T05:58:04Z
+  generation: 1
+  labels:
+    app: prometheus-operator-prometheus
+    chart: prometheus-operator-5.5.1
+    heritage: Tiller
+    release: prometheus
+  name: prometheus-prometheus-oper-prometheus
+  namespace: default
+  resourceVersion: "78362"
+  selfLink: /apis/monitoring.coreos.com/v1/namespaces/default/prometheuses/prometheus-prometheus-oper-prometheus
+  uid: 3ed7a04e-7156-11e9-ae1f-080027554f4a
+spec:
+  alerting:
+    alertmanagers:
+    - name: prometheus-prometheus-oper-alertmanager
+      namespace: default
+      pathPrefix: /
+      port: web
+  baseImage: quay.io/prometheus/prometheus
+  externalUrl: http://prometheus-prometheus-oper-prometheus.default:9090
+  listenLocal: false
+  logFormat: logfmt
+  logLevel: info
+  paused: false
+  replicas: 1
+  retention: 10d
+  routePrefix: /
+  ruleNamespaceSelector: {}
+  ruleSelector:
+    matchLabels:
+      app: prometheus-operator
+      release: prometheus
+  securityContext:
+    fsGroup: 2000
+    runAsNonRoot: true
+    runAsUser: 1000
+  serviceAccountName: prometheus-prometheus-oper-prometheus
+  serviceMonitorNamespaceSelector: {}
+  serviceMonitorSelector:
+    matchLabels:
+      release: prometheus
+  version: v2.9.1
+```
+
+Based on this CRD the operator will configure and setup Prometheus.
+
+To connect this installation with Grafana, as we did before we have to figure out how to access the prometheus server.
+
+````
+$ kubectl get svc
+NAME                                      TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
+alertmanager-operated                     ClusterIP   None             <none>        9093/TCP,6783/TCP   7m8s
+prometheus-grafana                        ClusterIP   10.97.44.173     <none>        80/TCP              5m49s
+prometheus-kube-state-metrics             ClusterIP   10.105.156.226   <none>        8080/TCP            5m49s
+prometheus-operated                       ClusterIP   None             <none>        9090/TCP            5m34s
+prometheus-prometheus-node-exporter       ClusterIP   10.105.64.5      <none>        9100/TCP            5m49s
+prometheus-prometheus-oper-alertmanager   ClusterIP   10.103.13.92     <none>        9093/TCP            5m49s
+prometheus-prometheus-oper-operator       ClusterIP   10.105.249.207   <none>        8080/TCP            5m49s
+prometheus-prometheus-oper-prometheus     ClusterIP   10.108.147.172   <none>        9090/TCP            5m49s
+```
+The service we should connect to is called: prometheus-prometheus-oper-prometheus and exposes port 9090, e.g. you can access it using `http://prometheus-prometheus-oper-prometheus:9090` from grafana.
+
+As you can see in the output above. The Prometheus Operator actually comes with Grafana bundled as well. To access this, you can do it in the same way as before, using a port-forward to the pod. In my case, it is as follows. (change to the pod-name running in your cluster)
+
+```
+$ kubectl port-forward prometheus-grafana-8589b465b9-2t7bc 3000 
+```
+
+The default username and password are:
+
+```
+Username: admin
+Password: prom-operator
+```
+
+Grafana is already setup with the correct data source to the prometheus server, along with a bunch of preloaded dashboards to explore.
+
 
 # TODO:
 * Add examples of interacting with the Alertmanager and Pushgateway
-* Add example of using the Prometheus Operator
