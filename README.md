@@ -227,7 +227,7 @@ Based on this CRD the operator will configure and setup Prometheus.
 
 To connect this installation with Grafana, as we did before we have to figure out how to access the prometheus server.
 
-````
+```
 $ kubectl get svc
 NAME                                      TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
 alertmanager-operated                     ClusterIP   None             <none>        9093/TCP,6783/TCP   7m8s
