@@ -155,5 +155,13 @@ http://prometheus-server
 
 ![](docs/4-connect-to-server.png)
 
-Explore your metrics using the `Explorer` in grafana
+Explore your metrics using the `Explore` in grafana
 ![](docs/5-explorer.png)
+
+
+## Removing it all again
+
+```
+helm del --purge prometheus
+helm del --purge grafana
+```
