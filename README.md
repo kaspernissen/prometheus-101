@@ -1,4 +1,4 @@
-# Prometheus 101 demo
+# Prometheus demo
 
 This is a simple demo on how to get started playing with Prometheus and Grafana locally in Kubernetes
 
