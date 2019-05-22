@@ -4,9 +4,13 @@ This is a simple demo on how to get started playing with Prometheus and Grafana 
 
 
 ## Getting a cluster
-There's plenty of different options for setting up a cluster. In this guide/demo we will use `minikube`.
+There's plenty of different options for setting up a cluster. 
 
-Follow the instructions here: https://kubernetes.io/docs/tasks/tools/install-minikube/
+This demo has been tested with both `minikube` and `kind`.
+
+To install `minikube` follow the instructions here: https://kubernetes.io/docs/tasks/tools/install-minikube/
+
+To install `kind` follow the instructions here: https://kind.sigs.k8s.io/docs/user/quick-start/ 
 
 ## Installing helm
 In order to get things set up quickly we will be using `helm`.
@@ -16,6 +20,38 @@ Follow the instructions here to install `helm`: https://github.com/helm/helm
 Initialize `helm` by calling `init`. This installs a service in the `minikube` cluster called `tiller` used by the `helm` client to interact with the kubernetes api.
 ```
 $ helm init
+```
+
+There's a little caveat when using `kind`. You have to set up `helm` with rbac permissions. You can do that easily by appling the following `ServiceAccount` and `ClusterRoleBinding` to your cluster.
+
+```
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tiller
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: tiller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: tiller
+    namespace: kube-system
+```
+As you can see above, this will provide `helm` with cluster-admin privileges. To apply this to the cluster, run:
+```
+$ kubectl apply -f kubernetes/helm/rbac.yaml
+```
+Now run the following command to setup `helm` with the correct ´ServiceAccount`. 
+
+```
+helm init --service-account tiller
 ```
 
 ## Installing Prometheus
