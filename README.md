@@ -8,9 +8,29 @@ There's plenty of different options for setting up a cluster.
 
 This demo has been tested with both `minikube` and `kind`.
 
+### minikube
 To install `minikube` follow the instructions here: https://kubernetes.io/docs/tasks/tools/install-minikube/
 
+To run `minikube`, just run the following command:
+
+```
+$ minikube start
+```
+
+### kind
 To install `kind` follow the instructions here: https://kind.sigs.k8s.io/docs/user/quick-start/ 
+
+To run `kind` execute the following command:
+
+```
+$ kind create cluster
+```
+If you want a more advance cluster setup, I have added an example of how to spin up a cluster with a master node and three worker nodes
+
+```
+$ kind create cluster --name threeworkers --config kubernetes/kind/cluster.yaml
+```
+
 
 ## Installing helm
 In order to get things set up quickly we will be using `helm`.
@@ -291,6 +311,31 @@ Password: prom-operator
 ```
 
 Grafana is already setup with the correct data source to the prometheus server, along with a bunch of preloaded dashboards to explore.
+
+
+## Putting load on the system
+
+We can play around with putting some load on the system using the `resource-consumer` image. [link](https://github.com/kubernetes/kubernetes/tree/master/test/images/resource-consumer)
+
+```
+kubectl run resource-consumer --image=gcr.io/kubernetes-e2e-test-images/resource-consumer:1.4 --port 8080 --requests='cpu=500m,memory=256Mi'
+```
+
+Now you can easily port-forward the pod to `localhost``
+
+```
+kubectl port-forward <resource consumer pod> 8080
+```
+
+Now we can simply `curl` the resource-consumer to start consuming resources:
+
+```
+curl --data "megabytes=30&durationSec=600" http://localhost:8080/ConsumeMem
+```
+
+If you have used the Prometheus Operator setup, you will be able to go the Pod dashboard and watch the memory consumption of the `resource-consumer` pod rise.
+
+
 
 
 # TODO:
